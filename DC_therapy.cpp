@@ -1,30 +1,11 @@
 
 #include "murinemodelv2.h"
 #include "util.h"
+#include <chrono>
+#include <ctime>
 
+using namespace boost::numeric::odeint;
 
-//template <class T>
-struct push_back_state_and_time2
-{
-    std::vector< std::vector<double> >& m_states;
-    std::vector<double> & m_times;
-
-    push_back_state_and_time2( std::vector< std::vector<double> > &states, std::vector<double> &times )
-        : m_states( states ), m_times( times ) { }
-
-    void operator()( const std::vector<double> &x, double t )
-    {
-        m_states.push_back( x );
-        m_times.push_back( t );
-    }
-	void operator()(const vector_type &x, double t)
-	{
-		//std::vector<double> v(x.size());
-		//std::copy(x.begin(), x.end(), v.begin());
-		m_states.push_back(toStdVectorD(x));
-		m_times.push_back(t);
-	}
-};
 struct push_back_state_and_time
 {
 	std::vector< StateType>& m_states;
@@ -48,7 +29,7 @@ struct push_back_state_and_time
 
 
 template <class T>
-void integrateSystem(T &system, StateType initialCondition, Doub t0, Doub tf,
+void integrateSystem(T &system, StateType &initialCondition, Doub t0, Doub tf,
                     std::vector<StateType> &u, StateType &t) {
 	typedef runge_kutta_dopri5<StateType> error_stepper_type;
 
@@ -58,6 +39,9 @@ void integrateSystem(T &system, StateType initialCondition, Doub t0, Doub tf,
 
 int main( int argc , char **argv )
 {
+	Doub aH, MuH, rH, KH, aC, MuC, rC, KC, KT, MuD, rI, MuIC, MuI;
+	Doub rT, aT, eT, hT, aTBeta, eTBeta, rTBeta, MuBeta, aGammaC;
+	Doub MuGamma, gMl, aMlGamma, eMlGamma, MuMl;
     aH = 1e-4;
 	MuH = 0.005;
 	rH = 10e-2;
@@ -90,22 +74,57 @@ int main( int argc , char **argv )
 
     MurineModelv2 fun(PARAMETERS);
     StateType initialCondition = {6e4, 0, 0, 0, 0, 0, 0, 0};
-    t0 = 0.0 ;
-    delay = 232;
-    tf = 168 + delay;
-    ef=0.05;
-    std::vector<StateType> u;
-    StateType tt;
-    integrateSystem(fun, initialCondition, t0,  tf, u, tt)
+    Doub t0 = 0.0 ;
+    Doub delay = 232;
+    Doub tf = 168 + delay;
+    Doub ef=0.05;
+    std::vector<StateType> u1,u2,u3,u4;
+    StateType tt1,tt2,tt3,tt4;
+	// Integration starts
+	auto start = std::chrono::system_clock::now();
+    integrateSystem(fun, initialCondition, t0,  tf, u1, tt1);
+	//First inyection 
+	initialCondition[3]+=1e6 * ef; // initialCondition holds the last value i.e. x(tf)
+	t0 = tf ;
+	tf = tf + 168;  
+	integrateSystem(fun, initialCondition, t0,  tf, u2, tt2);
+	//Second Inyection
+	initialCondition[3]+=1e6 * ef;
+	t0 = tf ;
+	tf = tf + 168;  
+	integrateSystem(fun, initialCondition, t0,  tf, u3, tt3);
+	//Third inyection
+	initialCondition[3]+=1e6 * ef;
+	t0 = tf ;
+	tf = 1400;  
+	integrateSystem(fun, initialCondition, t0,  tf, u4, tt4);
+	
 
-    //]
-    //clog << num_of_steps << end;
-    for( size_t i=0; i<= tt.size() - 1 ; i++ )
-    {
-        cout<< tt[i] << '\t' << u[i][0] << '\t' << u[i][1] << '\n';
-    }
-    cout<< x(0) << " " << x(1)<< endl;
+	auto end = std::chrono::system_clock::now();
 
 
-	cin.get();
+
+	std::ofstream out("points.txt",std::ios::trunc);
+
+	for (int i = 0; i <= tt1.size() - 1; i++)
+	{
+		out<< tt1[i] <<"," << u1[i][0] << '\n';
+	}
+	for (int i = 0; i <= tt2.size() - 1; i++)
+	{
+		out<< tt2[i] <<"," << u2[i][0] << '\n';
+	}
+	for (int i = 0; i <= tt3.size() - 1; i++)
+	{
+		out<< tt3[i] <<"," << u3[i][0] << '\n';
+	}
+	for (int i = 0; i <= tt4.size() - 1; i++)
+	{
+		out<< tt4[i] <<"," << u4[i][0] << '\n';
+	}
+
+	std::chrono::duration<double> elapsed_seconds = end - start;
+
+	std::cout <<"Integration took :" << elapsed_seconds.count() <<"sec \n";
+	// std::cin.get();
 }

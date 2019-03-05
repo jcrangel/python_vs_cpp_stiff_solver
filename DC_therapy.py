@@ -135,7 +135,7 @@ ef=0.05
 
 start = time.time()
 sol = solve_ivp(DC_model,[t0,tf],y0,method='LSODA',atol=1e-4,jac=DC_model_jacobian)  #,method='LSODA'
-plt.plot(sol.t, sol.y[0,:], 'b')
+# plt.plot(sol.t, sol.y[0,:], 'b')
 # plt.plot(sol.t, sol.y[:, 1], 'g', label='omega(t)')
 
 #First injection
@@ -143,14 +143,14 @@ y0 = sol.y[:,-1] + [0, 0, 0, 1e6 * ef, 0, 0, 0, 0]
 t0 = tf 
 tf = tf + 168   
 sol = solve_ivp(DC_model,[t0,tf],y0,method='LSODA',atol=1e-4,jac=DC_model_jacobian)  #,method='LSODA'
-plt.plot(sol.t, sol.y[0,:], 'b')
+# plt.plot(sol.t, sol.y[0,:], 'b')
 
 #Second injection
 y0 = sol.y[:,-1] + [0, 0, 0, 1e6 * ef, 0, 0, 0, 0]
 t0 = tf 
 tf = tf + 168   
 sol = solve_ivp(DC_model,[t0,tf],y0,method='LSODA',atol=1e-4,jac=DC_model_jacobian)  #,method='LSODA'
-plt.plot(sol.t, sol.y[0,:], 'b')
+# plt.plot(sol.t, sol.y[0,:], 'b')
 
 #Thrid injection
 y0 = sol.y[:,-1] + [0, 0, 0, 1e6 * ef, 0, 0, 0, 0]
@@ -159,14 +159,14 @@ tf = 1400
 sol = solve_ivp(DC_model,[t0,tf],y0,method='LSODA',atol=1e-4,jac=DC_model_jacobian)  #,method='LSODA'
 end = time.time()
 print('Solving took: ' + str((end-start)/60) + ' min')
-plt.plot(sol.t, sol.y[0,:], 'b', label='T(t)')
+# plt.plot(sol.t, sol.y[0,:], 'b', label='T(t)')
 
 
 
-plt.legend(loc='best')
-plt.xlabel('t')
-plt.grid()
-plt.show()
+# plt.legend(loc='best')
+# plt.xlabel('t')
+# plt.grid()
+# plt.show()
 
 # On laptop
 # LSODA took  5.526416440804799 min ,atol=1e-5, no jac
