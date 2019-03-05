@@ -1,0 +1,14 @@
+# Ignore the build and lib dirs
+build
+lib/*
+
+# Ignore any executables
+bin/*
+
+#ignore obj and build 
+obj/*
+
+build/*
+
+#ignore any exe
+*.exe
