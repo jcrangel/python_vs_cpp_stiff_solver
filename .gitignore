@@ -12,3 +12,4 @@ build/*
 
 #ignore any exe
 *.exe
+*.out
